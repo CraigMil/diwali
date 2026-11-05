@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Diwali Photo Booth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #160b05;
+    --bg2: #2a1408;
+    --gold: #ffc440;
+    --gold-deep: #e8962e;
+    --text: #fff7e8;
+    --muted: #e9d6b8;
+    --card: rgba(255, 196, 64, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(120% 80% at 50% 0%, var(--bg2), var(--bg) 70%);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: max(20px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+  }
+  h1 {
+    font-family: "Amatic SC", cursive;
+    color: var(--gold);
+    font-size: clamp(2.6rem, 11vw, 4rem);
+    line-height: 1;
+    margin: 4px 0 2px;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .lamps { color: var(--gold-deep); font-size: 1.1rem; letter-spacing: 0.6em; margin: 0 0 14px 0.6em; }
+  main { width: 100%; max-width: 760px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .photo {
+    width: 100%;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1px solid rgba(255, 196, 64, 0.35);
+    padding: 8px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo img { display: block; width: 100%; height: auto; border-radius: 8px; }
+  .note { color: var(--muted); font-size: 0.95rem; text-align: center; margin: 0; }
+  .buttons { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  a.btn {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 16px 20px;
+    border-radius: 999px;
+  }
+  .primary { background: linear-gradient(180deg, var(--gold), var(--gold-deep)); color: #2a1408; }
+  .secondary { border: 2px solid var(--gold); color: var(--gold); }
+  .hidden { display: none !important; }
+  footer { margin-top: 26px; color: var(--muted); font-size: 0.85rem; opacity: 0.8; text-align: center; }
+  @media (min-width: 640px) { .buttons { flex-direction: row; } .buttons a.btn { flex: 1; } }
+</style>
+</head>
+<body>
+  <h1>Happy Diwali!</h1>
+  <div class="lamps" aria-hidden="true">✦ ✦ ✦</div>
+  <main>
+    <div class="photo" id="photo-box">
+      <img id="photo" class="hidden" alt="Your photo from the Diwali photo booth">
+      <p class="note" id="status">Loading your photo…</p>
+    </div>
+    <p class="note hidden" id="hint">Tip: press and hold the photo to save it to your phone.</p>
+    <div class="buttons">
+      <a class="btn primary hidden" id="save" rel="noopener">Save my photo</a>
+      <a class="btn secondary" id="album" rel="noopener" href="https://photos.app.goo.gl/AWh6KwGNxm9yctxe7">See all the party photos</a>
+    </div>
+  </main>
+  <footer>Diwali 2026 photo booth</footer>
+<script>
+(function () {
+  var id = new URLSearchParams(location.search).get("p") || "";
+  var status = document.getElementById("status");
+  // Google Drive file ids: letters, digits, - and _ only. Anything else: no photo, album only.
+  if (!/^[A-Za-z0-9_-]{20,100}$/.test(id)) {
+    status.textContent = "Find your photo in the party album below.";
+    return;
+  }
+  var img = document.getElementById("photo");
+  var tries = 0;
+  img.onload = function () {
+    img.classList.remove("hidden");
+    status.classList.add("hidden");
+    document.getElementById("hint").classList.remove("hidden");
+    var save = document.getElementById("save");
+    save.href = "https://drive.google.com/uc?export=download&id=" + encodeURIComponent(id);
+    save.classList.remove("hidden");
+  };
+  img.onerror = function () {
+    // Just-uploaded photos can take a moment to appear: retry a few times.
+    if (++tries <= 5) {
+      status.textContent = "Your photo is on its way…";
+      setTimeout(load, 3000);
+    } else {
+      status.textContent = "Couldn't load your photo just now. It will be in the party album below.";
+    }
+  };
+  function load() {
+    // Alternate between Drive's two public image addresses on retries.
+    img.src = tries % 2
+      ? "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w2000&t=" + tries
+      : "https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=w2000";
+  }
+  load();
+})();
+</script>
+</body>
+</html>
